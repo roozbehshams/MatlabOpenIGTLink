@@ -1,6 +1,6 @@
 MatlabOpenIGTLink
 =================
-This project provides modular and easy to use implementaion for OpenIGTLink  protocol using MATLAB. Current verstion can send STRING, TRAnSFORM and NDArray(1D Float Array) messages and can receive STRING and TRANSFORM messages.
+This project provides modular and easy to use implementaion for OpenIGTLink  protocol using MATLAB. Current verstion can send STRING, TRANSFORM and NDArray(1D Float Array) messages and can receive STRING and TRANSFORM messages.
 
 It is based on MATLAB bridge implemented by Andras Lasso.
 
