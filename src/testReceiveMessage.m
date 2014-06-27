@@ -2,11 +2,11 @@ function testReceiveMessage()
 sock = igtlConnect('127.0.0.1',18944);
 receiver = OpenIGTLinkMessageReceiver(sock, @onRxStringMessage, @onRxTransformMessage, @onRxNDArrayMessage);
 
-    while(1)
+    for i=1:10
         receiver.readMessage();
     end
     
-    igtlDisconnect(igtlConnection);
+    igtlDisconnect(sock);
 
 end
 

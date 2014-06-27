@@ -62,6 +62,55 @@ function handleTransformMessage(msg, onRxTransformMessage)
     onRxTransformMessage(msg.deviceName , transform);
 end
 
+function handleImageMessage(msg, onRxStringMessage)
+    body = msg.body;
+    i=1;
+    
+    V = uint8(body(i)); i = i + 1;
+    T = uint8(body(i)); i = i + 1;
+    S = uint8(body(i)); i = i + 1;
+    E = uint8(body(i)); i = i + 1;
+    O = uint8(body(i)); i = i + 1;
+    
+    RI =  convertFromUint8VectorToUint16(body(i:i+1));i = i + 2;
+    RJ =  convertFromUint8VectorToUint16(body(i:i+1));i = i + 2;
+    RK =  convertFromUint8VectorToUint16(body(i:i+1));i = i + 2;
+    
+    TX =  convertFromUint8VectorToUint16(body(i:i+3));i = i + 4;
+    TY =  convertFromUint8VectorToUint16(body(i:i+3));i = i + 4;
+    TZ =  convertFromUint8VectorToUint16(body(i:i+3));i = i + 4;
+    
+    SX =  convertFromUint8VectorToUint16(body(i:i+3));i = i + 4;
+    SY =  convertFromUint8VectorToUint16(body(i:i+3));i = i + 4;
+    SZ =  convertFromUint8VectorToUint16(body(i:i+3));i = i + 4;
+    
+    NX =  convertFromUint8VectorToUint16(body(i:i+3));i = i + 4;
+    NY =  convertFromUint8VectorToUint16(body(i:i+3));i = i + 4;
+    NZ =  convertFromUint8VectorToUint16(body(i:i+3));i = i + 4;
+    
+    PX =  convertFromUint8VectorToUint16(body(i:i+3));i = i + 4;
+    PY =  convertFromUint8VectorToUint16(body(i:i+3));i = i + 4;
+    PZ =  convertFromUint8VectorToUint16(body(i:i+3));i = i + 4;
+    
+    DI = convertFromUint8VectorToUint16(body(i:i+1)); i = i + 2;
+    DJ = convertFromUint8VectorToUint16(body(i:i+1)); i = i + 2;
+    DK = convertFromUint8VectorToUint16(body(i:i+1)); i = i + 2;
+    
+    DRI = convertFromUint8VectorToUint16(body(i:i+1)); i = i + 2;
+    DRJ = convertFromUint8VectorToUint16(body(i:i+1)); i = i + 2;
+    DRK = convertFromUint8VectorToUint16(body(i:i+1)); i = i + 2;
+    
+    IMAGE_DATA = body(i:length(body));
+    
+    strMsgEncoding=convertFromUint8VectorToUint16(msg.body(1:2));
+    if (strMsgEncoding~=3)
+        disp(['Warning: STRING message received with unknown encoding ',num2str(strMsgEncoding)])
+    end
+    strMsgLength=convertFromUint8VectorToUint16(msg.body(3:4));
+    msg.string=char(msg.body(5:4+strMsgLength));
+    onRxStringMessage(msg.deviceName, msg.string);
+end
+
 function handleNDArrayMessage(msg, onRxNDArrayMessage)
     %YET NOT implmented, will be available soon
 end
