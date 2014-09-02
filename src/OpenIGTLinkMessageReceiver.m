@@ -14,7 +14,7 @@ function receiver = OpenIGTLinkMessageReceiver(sock, onRxStringMsg, onRxTransfor
     receiver.readMessage = @readMessage;
 end
 
-function msg = readMessage()
+function [name data] = readMessage()
     global onRxStringMessage onRxTransformMessage onRxNDArrayMessage;
 
     msg = ReadOpenIGTLinkMessage();
@@ -25,16 +25,16 @@ function msg = readMessage()
     messageType = deblank(messageType);
     
     if strcmpi(messageType, 'STRING')==1
-        handleStringMessage(msg, onRxStringMessage );
+        [name data] = handleStringMessage(msg, onRxStringMessage );
      elseif (strcmpi(messageType, 'TRANSFORM')==1)
-         handleTransformMessage(msg, onRxTransformMessage );
+        [name data]=handleTransformMessage(msg, onRxTransformMessage );
      elseif strcmpi(messageType, 'NDARRAY') == 1
          handleNDArrayMessage(msg, onRxNDArrayMessage );
      end        
 
 end
 
-function handleStringMessage(msg, onRxStringMessage)
+function [name message] = handleStringMessage(msg, onRxStringMessage)
     if (length(msg.body)<5)
         disp('Error: STRING message received with incomplete contents')
         msg.string='';
@@ -46,10 +46,12 @@ function handleStringMessage(msg, onRxStringMessage)
     end
     strMsgLength=convertFromUint8VectorToUint16(msg.body(3:4));
     msg.string=char(msg.body(5:4+strMsgLength));
-    onRxStringMessage(msg.deviceName, msg.string);
+    name = msg.deviceName;
+    message = msg.string;
+    %onRxStringMessage(msg.deviceName, msg.string);
 end
 
-function handleTransformMessage(msg, onRxTransformMessage)
+function [name trans] = handleTransformMessage(msg, onRxTransformMessage)
     transform = diag([1 1 1 1]);
     k=1;
     for i=1:4
@@ -58,8 +60,9 @@ function handleTransformMessage(msg, onRxTransformMessage)
             k = k+1;
         end
     end
-    
-    onRxTransformMessage(msg.deviceName , transform);
+    name = msg.deviceName;
+    trans = transform;
+    %onRxTransformMessage(msg.deviceName , transform);
 end
 
 function handleImageMessage(msg, onRxStringMessage)
