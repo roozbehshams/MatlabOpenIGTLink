@@ -48,7 +48,7 @@ function [name message] = handleStringMessage(msg, onRxStringMessage)
     msg.string=char(msg.body(5:4+strMsgLength));
     name = msg.deviceName;
     message = msg.string;
-    %onRxStringMessage(msg.deviceName, msg.string);
+    onRxStringMessage(msg.deviceName, msg.string);
 end
 
 function [name trans] = handleTransformMessage(msg, onRxTransformMessage)
@@ -62,7 +62,7 @@ function [name trans] = handleTransformMessage(msg, onRxTransformMessage)
     end
     name = msg.deviceName;
     trans = transform;
-    %onRxTransformMessage(msg.deviceName , transform);
+    onRxTransformMessage(msg.deviceName , transform);
 end
 
 function handleImageMessage(msg, onRxStringMessage)

@@ -4,6 +4,7 @@ function openIGTMessageSender = OpenIGTLinkMessageSender(sock)
     openIGTMessageSender.WriteOpenIGTLinkStringMessage = @WriteOpenIGTLinkStringMessage;
     openIGTMessageSender.Write1DFloatArrayMessage = @Write1DFloatArrayMessage;
     openIGTMessageSender.igtlSendTransformMessage = @igtlSendTransformMessage;
+    openIGTMessageSender.igtlSendImageMessage = @igtlSendImageMessage;
 end
 
 function result=WriteOpenIGTLinkStringMessage(deviceName, msgString)
@@ -42,6 +43,32 @@ function result=igtlSendTransformMessage(deviceName, transform)
     result=WriteOpenIGTLinkMessage(msg);
 end
 
+function result=igtlSendImageMessage(deviceName, RI, RJ, RK , TX, TY, TZ, SX, SY, SZ, NX, NY, NZ, PX, PY, PZ, imageData)
+    msg.dataTypeName='IMAGE';
+    msg.deviceName=deviceName;
+    msg.timestamp=igtlTimestampNow();
+    % version number
+    % note that it is an unsigned short value, but small positive signed and unsigned numbers are represented the same way, so we can use writeShort
+    msg.body = [convertFromUint16ToUint8Vector(1),... %Version
+        uint8(1), ... %Number of Image Components (1:Scalar, >1:Vector). (NOTE: Vector data is stored fully interleaved.)
+        uint8(5), ... %Scalar type (2:int8 3:uint8 4:int16 5:uint16 6:int32 7:uint32 10:float32 11:float64)
+        uint8(2), ... %Endian for image data (1:BIG 2:LITTLE) (NOTE: values in image header is fixed to BIG endian)
+        uint8(1), ... % image coordinate (1:RAS 2:LPS)
+        convertFromUint16ToUint8Vector(uint16(RI)), convertFromUint16ToUint8Vector(uint16(RJ)), convertFromUint16ToUint8Vector(uint16(RK)), ... %Number of pixels in each direction
+        convertFromFloat32ToUint8Vector(TX),convertFromFloat32ToUint8Vector(TY), convertFromFloat32ToUint8Vector(TZ) ... %Transverse vector (direction for 'i' index) / The length represents pixel size in 'i' direction in millimeter
+        convertFromFloat32ToUint8Vector(SX),convertFromFloat32ToUint8Vector(SY), convertFromFloat32ToUint8Vector(SZ) ... %Transverse vector (direction for 'j' index) / The length represents pixel size in 'j' direction in millimeter
+        convertFromFloat32ToUint8Vector(NX),convertFromFloat32ToUint8Vector(NY), convertFromFloat32ToUint8Vector(NZ) ... %Normal vector of image plane(direction for 'k' index) / The length represents pixel size in 'z' direction or slice thickness in millimeter
+        convertFromFloat32ToUint8Vector(PX),convertFromFloat32ToUint8Vector(PY), convertFromFloat32ToUint8Vector(PZ) ... %center position of the image (in millimeter) (*)
+        convertFromUint16ToUint8Vector(uint16(0)), convertFromUint16ToUint8Vector(uint16(0)), convertFromUint16ToUint8Vector(uint16(0)), ... %Number of pixels in each direction
+        convertFromUint16ToUint8Vector(uint16(RI)), convertFromUint16ToUint8Vector(uint16(RJ)), convertFromUint16ToUint8Vector(uint16(RK)) %Number of pixels in each direction
+        ];
+    for i=1:size(imageData,1)
+        for j=1:size(imageData,2)
+            msg.body=[ msg.body, convertFromUint16ToUint8Vector(uint16(imageData(i,j)))];
+        end
+    end
+    result=WriteOpenIGTLinkMessage(msg);
+end
 
 % Returns 1 if successful, 0 if failed
 function result=WriteOpenIGTLinkMessage(msg)
