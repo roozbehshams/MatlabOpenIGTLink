@@ -35,15 +35,18 @@ function result=igtlSendTransformMessage(deviceName, transform)
     % version number
     % note that it is an unsigned short value, but small positive signed and unsigned numbers are represented the same way, so we can use writeShort
     msg.body = [];
-    for i=1:4
-        for j=1:3
-            msg.body=[ msg.body, convertFromFloat32ToUint8Vector(transform(j,i))];
-        end
-    end
+    msg.body=typecast(swapbytes(single(reshape(transform(1:3,:),1,[]))), 'uint8');
+
+%     for i=1:4
+%         for j=1:3
+%             msg.body=[ msg.body, convertFromFloat32ToUint8Vector(transform(j,i))];
+%         end
+%     end
     result=WriteOpenIGTLinkMessage(msg);
 end
 
 function result=igtlSendImageMessage(deviceName, RI, RJ, RK , TX, TY, TZ, SX, SY, SZ, NX, NY, NZ, PX, PY, PZ, imageData)
+tic
     msg.dataTypeName='IMAGE';
     msg.deviceName=deviceName;
     msg.timestamp=igtlTimestampNow();
@@ -51,7 +54,7 @@ function result=igtlSendImageMessage(deviceName, RI, RJ, RK , TX, TY, TZ, SX, SY
     % note that it is an unsigned short value, but small positive signed and unsigned numbers are represented the same way, so we can use writeShort
     msg.body = [convertFromUint16ToUint8Vector(1),... %Version
         uint8(1), ... %Number of Image Components (1:Scalar, >1:Vector). (NOTE: Vector data is stored fully interleaved.)
-        uint8(10), ... %Scalar type (2:int8 3:uint8 4:int16 5:uint16 6:int32 7:uint32 10:float32 11:float64)
+        uint8(4), ... %Scalar type (2:int8 3:uint8 4:int16 5:uint16 6:int32 7:uint32 10:float32 11:float64)
         uint8(2), ... %Endian for image data (1:BIG 2:LITTLE) (NOTE: values in image header is fixed to BIG endian)
         uint8(1), ... % image coordinate (1:RAS 2:LPS)
         convertFromUint16ToUint8Vector(RI), convertFromUint16ToUint8Vector(RJ), convertFromUint16ToUint8Vector(RK), ... %Number of pixels in each direction
@@ -62,13 +65,19 @@ function result=igtlSendImageMessage(deviceName, RI, RJ, RK , TX, TY, TZ, SX, SY
         convertFromUint16ToUint8Vector(0), convertFromUint16ToUint8Vector(0), convertFromUint16ToUint8Vector(0), ... %Number of pixels in each direction
         convertFromUint16ToUint8Vector(RI), convertFromUint16ToUint8Vector(RJ), convertFromUint16ToUint8Vector(RK) %Number of pixels in each direction
         ];
-    for i=1:size(imageData,1)
-        for j=1:size(imageData,2)
-            msg.body=[ msg.body, convertFromFloat32ToUint8Vector(imageData(i,j))];
-        end
-    end
+%     for i=1:size(imageData,1)
+%         for j=1:size(imageData,2)
+%             msg.body=[ msg.body, convertFromFloat32ToUint8Vector(imageData(i,j))];
+%         end
+%     end
+%    
+    %this next one statement does what above entire loop would do and above
+    %loop used to take about 2 seconds while this statement takes 3
+    %miliseconds
+    msg.body=[ msg.body,  typecast((int16(reshape(imageData',1,[]))), 'uint8')];
     disp(['Size of the Image Message Body=', num2str(length(uint8(msg.body)))]);
     result=WriteOpenIGTLinkMessage(msg);
+toc
 end
 
 % Returns 1 if successful, 0 if failed
