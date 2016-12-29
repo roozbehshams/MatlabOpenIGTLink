@@ -91,7 +91,7 @@ function result=WriteOpenIGTLinkMessage(msg)
     msg.bodySize=length(msg.body);
     disp(['Msg.BodySize=', num2str(msg.bodySize)]);
 
-    msg.bodyCrc=0; % TODO: compute this
+    msg.bodyCrc=0;%crc64(uint8(msg.body)); % TODO: compute this
     % Pack message
     data=[];
     data=[data, convertFromUint16ToUint8Vector(msg.versionNumber)];
