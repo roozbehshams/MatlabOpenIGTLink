@@ -136,7 +136,8 @@ function selectedByte=getNthByte(multibyte, n)
 end
 
 function result=convertFromUint16ToUint8Vector(uint16Value)
-  result=[getNthByte(uint16Value,1) getNthByte(uint16Value,0)];
+    result = typecast(swapbytes(uint16(uint16Value)), 'uint8');
+    %result=[getNthByte(uint16Value,1) getNthByte(uint16Value,0)];
 end
 
 function result=convertFromInt32ToUint8Vector(int32Value)
