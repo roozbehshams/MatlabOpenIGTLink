@@ -89,7 +89,7 @@ function result=WriteOpenIGTLinkMessage(msg)
     % Add constant fields values
     msg.versionNumber=1;
     msg.bodySize=length(msg.body);
-    disp(['Msg.BodySize=', num2str(msg.bodySize)]);
+    %disp(['Msg.BodySize=', num2str(msg.bodySize)]);
 
     msg.bodyCrc=0;%crc64(uint8(msg.body)); % TODO: compute this
     % Pack message
@@ -103,7 +103,7 @@ function result=WriteOpenIGTLinkMessage(msg)
     data=[data, uint8(msg.body)];    
     result=1;
     try
-        disp(['Length Of Data being writeen to socket=', num2str(length(data))]);
+        %disp(['Length Of Data being writeen to socket=', num2str(length(data))]);
         DataOutputStream(socket.outputStream).write(uint8(data),0,length(data));
         DataOutputStream(socket.outputStream).flush;
     catch ME

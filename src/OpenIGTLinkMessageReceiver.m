@@ -4,7 +4,7 @@ function receiver = OpenIGTLinkMessageReceiver(sock, onRxStringMsg, onRxTransfor
     onRxStringMessage = onRxStringMsg;
     onRxTransformMessage = onRxTransformMsg;
     onRxNDArrayMessage = onRxNDArrayMsg;
-
+    
     global socket;
     socket = sock;
     
@@ -14,8 +14,8 @@ function receiver = OpenIGTLinkMessageReceiver(sock, onRxStringMsg, onRxTransfor
     receiver.readMessage = @readMessage;
 end
 
-function [name data] = readMessage()
-    global onRxStringMessage onRxTransformMessage onRxNDArrayMessage;
+function [name, data] = readMessage()
+    global onRxStringMessage onRxTransformMessage onRxNDArrayMessage onRxPointMessage;
 
     msg = ReadOpenIGTLinkMessage();
     
@@ -25,16 +25,18 @@ function [name data] = readMessage()
     messageType = deblank(messageType);
     
     if strcmpi(messageType, 'STRING')==1
-        [name data] = handleStringMessage(msg, onRxStringMessage );
+        [name, data] = handleStringMessage(msg, onRxStringMessage );
      elseif (strcmpi(messageType, 'TRANSFORM')==1)
-        [name data]=handleTransformMessage(msg, onRxTransformMessage );
+        [name, data]=handleTransformMessage(msg, onRxTransformMessage );
      elseif strcmpi(messageType, 'NDARRAY') == 1
-         handleNDArrayMessage(msg, onRxNDArrayMessage );
+        [name, data]= handleNDArrayMessage(msg, onRxNDArrayMessage );
+     elseif strcmpi(messageType, 'POINT') == 1
+         [name, data] = handlePointMessage(msg, '' );
      end        
 
 end
 
-function [name message] = handleStringMessage(msg, onRxStringMessage)
+function [name, message] = handleStringMessage(msg, onRxStringMessage)
     if (length(msg.body)<5)
         disp('Error: STRING message received with incomplete contents')
         msg.string='';
@@ -51,7 +53,7 @@ function [name message] = handleStringMessage(msg, onRxStringMessage)
     onRxStringMessage(msg.deviceName, msg.string);
 end
 
-function [name trans] = handleTransformMessage(msg, onRxTransformMessage)
+function [name, trans] = handleTransformMessage(msg, onRxTransformMessage)
     transform = diag([1 1 1 1]);
     k=1;
     for i=1:4
@@ -114,10 +116,30 @@ function handleImageMessage(msg, onRxStringMessage)
     onRxStringMessage(msg.deviceName, msg.string);
 end
 
-function handleNDArrayMessage(msg, onRxNDArrayMessage)
+function [name, data] = handleNDArrayMessage(msg, onRxNDArrayMessage)
     %YET NOT implmented, will be available soon
+    name = '';
+    data = [];
 end
 
+function [listName, points] = handlePointMessage(msg, onRxPointMessage)
+    sizeOfPoint = 136;
+    numPoints = msg.bodySize/sizeOfPoint;
+    listName = deblank(msg.deviceName);
+
+    for i=1:numPoints
+        pointDataIndexStart = (i-1)*sizeOfPoint;
+        points(i).name = deblank(char(msg.body(pointDataIndexStart+1:pointDataIndexStart+64)));
+        points(i).group = deblank(char(msg.body(pointDataIndexStart+65:pointDataIndexStart+96)));
+        points(i).color = [uint8(msg.body(pointDataIndexStart+97)),uint8(msg.body(pointDataIndexStart+98)),uint8(msg.body(pointDataIndexStart+99)),uint8(msg.body(pointDataIndexStart+100))];
+        points(i).x = convertFromUint8VectorToFloat32(msg.body(pointDataIndexStart+101:pointDataIndexStart+104));
+        points(i).y = convertFromUint8VectorToFloat32(msg.body(pointDataIndexStart+105:pointDataIndexStart+108));
+        points(i).z = convertFromUint8VectorToFloat32(msg.body(pointDataIndexStart+109:pointDataIndexStart+112));
+        points(i).diamter = convertFromUint8VectorToFloat32(msg.body(pointDataIndexStart+113:pointDataIndexStart+116));
+        points(i).owner = deblank(char(msg.body(pointDataIndexStart+117:pointDataIndexStart+136)));
+    end
+   % onRxPointMessage(listName, points);
+end
 %%  Parse OpenIGTLink messag header
 % http://openigtlink.org/protocols/v2_header.html    
 function parsedMsg=ParseOpenIGTLinkMessageHeader(rawMsg)
