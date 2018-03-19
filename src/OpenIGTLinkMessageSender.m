@@ -1,13 +1,14 @@
-function openIGTMessageSender = OpenIGTLinkMessageSender(sock)
+function openIGTMessageSender = OpenIGTLinkMessageSender(igtlConnection)
     global socket;
-    socket = sock;
-    openIGTMessageSender.WriteOpenIGTLinkStringMessage = @WriteOpenIGTLinkStringMessage;
-    openIGTMessageSender.Write1DFloatArrayMessage = @Write1DFloatArrayMessage;
+    socket = igtlConnection.socket;    
+
+    openIGTMessageSender.igtlSendStringMessage = @igtlSendStringMessage;
+    openIGTMessageSender.igtlSend1DFloatArrayMessage = @igtlSend1DFloatArrayMessage;
     openIGTMessageSender.igtlSendTransformMessage = @igtlSendTransformMessage;
     openIGTMessageSender.igtlSendImageMessage = @igtlSendImageMessage;
 end
 
-function result=WriteOpenIGTLinkStringMessage(deviceName, msgString)
+function result=igtlSendStringMessage(deviceName, msgString)
     msg.dataTypeName='STRING';
     msg.deviceName=deviceName;
     msg.timestamp=igtlTimestampNow();
@@ -16,7 +17,7 @@ function result=WriteOpenIGTLinkStringMessage(deviceName, msgString)
     result=WriteOpenIGTLinkMessage(msg);
 end
 
-function result=Write1DFloatArrayMessage(deviceName, data)
+function result=igtlSend1DFloatArrayMessage(deviceName, data)
     msg.dataTypeName='NDARRAY';
     msg.deviceName=deviceName;
     msg.timestamp=igtlTimestampNow();
@@ -83,9 +84,6 @@ end
 % Returns 1 if successful, 0 if failed
 function result=WriteOpenIGTLinkMessage(msg)
     global socket;
-    import java.net.Socket
-    import java.io.*
-    import java.net.ServerSocket
     % Add constant fields values
     msg.versionNumber=1;
     msg.bodySize=length(msg.body);
@@ -104,14 +102,7 @@ function result=WriteOpenIGTLinkMessage(msg)
     result=1;
     try
         %disp(['Length Of Data being writeen to socket=', num2str(length(data))]);
-        DataOutputStream(socket.outputStream).write(uint8(data),0,length(data));
-        DataOutputStream(socket.outputStream).flush;
-    catch ME
-        disp(ME.message)
-        result=0;
-    end
-    try
-        DataOutputStream(socket.outputStream).flush;
+        fwrite(socket, uint8(data));
     catch ME
         disp(ME.message)
         result=0;

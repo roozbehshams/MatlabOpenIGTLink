@@ -1,9 +1,9 @@
 igtlConnection = igtlConnect('127.0.0.1',18944);
-sender = OpenIGTLinkMessageSender(igtlConnection);
+sender = OpenIGTLinkMessageSender(igtlConnection.socket);
 
 for t=1:1
   msg = 'Hello';
-  sender.WriteOpenIGTLinkStringMessage('CMD_0001', msg);
+  sender.igtlSendStringMessage('CMD_0001', msg);
 %   msg1 = [ '<Command Name=''SetVar'' insertion_depth=''' , num2str(t/2,5) , '''/>'];
 %   sender.WriteOpenIGTLinkStringMessage('CMD_0001', msg1);
 %   
