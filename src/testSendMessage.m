@@ -1,5 +1,5 @@
 igtlConnection = igtlConnect('127.0.0.1',18944);
-sender = OpenIGTLinkMessageSender(igtlConnection.socket);
+sender = OpenIGTLinkMessageSender(igtlConnection);
 
 for t=1:1
   msg = 'Hello';
@@ -10,9 +10,9 @@ for t=1:1
 %   data = [1.23456, 2, 3];
 %   sender.Write1DFloatArrayMessage('CMD_001', data);
 %   
-%   matrix = [ 1.34567 0 0 t; 0 1 0 0; 0 0 1 0; 0 0 0 1 ];
-%   sender.igtlSendTransformMessage('TARGET_001', matrix);
-%   pause(1)
+   matrix = [ 1.34567 0 0 t; 0 1 0 0; 0 0 1 0; 0 0 0 1 ];
+   sender.igtlSendTransformMessage('TARGET_001', matrix);
+   pause(1)
 
 end
 
