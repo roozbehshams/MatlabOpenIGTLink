@@ -1,6 +1,7 @@
 igtlConnection = igtlConnect('127.0.0.1',18944);
 sender = OpenIGTLinkMessageSender(igtlConnection);
 
+
 for t=1:1
   msg = 'Hello';
   sender.igtlSendStringMessage('CMD_0001', msg);
