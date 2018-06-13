@@ -3,7 +3,7 @@ igtlConnection = igtlConnect('127.0.0.1',18944);
 sender = OpenIGTLinkMessageSender(igtlConnection);
 pause(2)
 
-for t=0:100
+for t=0:0
     
   % An arbitrary movement in 3D space
   Amp = 30;
@@ -19,7 +19,7 @@ for t=0:100
   sender.igtlSendStringMessage('CMD_RESULT', msg);
   sender.igtlSendTransformMessage('ProbeToRefrence', matrix);
   
-  pause(0.03)
+  pause(0.05)
 
 end
 
